@@ -325,3 +325,117 @@ tree
 cat ~/gitops-fleet/clusters/civo-workshop/cert-manager.yaml
 cat ~/gitops-fleet/clusters/civo-workshop/cert-manager-issuer.yaml
 ```
+
+### Prometheus
+
+```
+cat > ~/gitops-fleet/clusters/civo-workshop/prometheus.yaml << EOF
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: prometheus
+  namespace: default
+spec:
+  interval: 60m
+  url: https://prometheus-community.github.io/helm-charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: prometheus
+  namespace: default
+spec:
+  interval: 60m
+  releaseName: prometheus
+  chart:
+    spec:
+      chart: prometheus
+      version: 15.10.1
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus
+      interval: 10m
+  values:
+    pushgateway:
+      enabled: false
+    alertmanager:
+      enabled: false
+    server: 
+      retention: "14d"
+      global:
+        scrape_interval: 15s
+EOF
+```
+
+### Grafana
+
+```
+cat > ~/gitops-fleet/clusters/civo-workshop/grafana.yaml << EOF
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: grafana
+  namespace: default
+spec:
+  interval: 60m
+  url: https://grafana.github.io/helm-charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: grafana
+  namespace: default
+spec:
+  interval: 60m
+  releaseName: grafana
+  chart:
+    spec:
+      chart: grafana
+      version: 6.32.2
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+      interval: 10m
+  values:
+    sidecar:
+      datasources:
+        enabled: true
+      dashboards:
+        enabled: true
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt
+      tls:
+        - secretName: tls-grafana
+          hosts:
+            - grafana.$NS.workshop.gimlet.io
+      hosts:
+        - grafana.$NS.workshop.gimlet.io
+      path: /
+EOF
+```
+
+```
+flux create kustomization grafana-config \
+  --target-namespace=default \
+  --source=civo-workshop \
+  --path="./grafana-config" \
+  --prune=true \
+  --interval=5m \
+  --export > ~/gitops-fleet/clusters/civo-workshop/grafana-config.yaml
+```
+
+Deploy, then visit: https://grafana.$NS.workshop.gimlet.io
+
+Grafana `admin` user password:
+```
+kubectl get secret grafana --template='{{ index .data "admin-password"}}' | base64 -d
+```
+
+## Deploy to gitops with Github Actions
+
+

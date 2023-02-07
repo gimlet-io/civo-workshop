@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $GITHUB_REPOSITORY_NAME
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: onechart
+      app.kubernetes.io/instance: $GITHUB_REPOSITORY_NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: onechart
+        app.kubernetes.io/instance: $GITHUB_REPOSITORY_NAME
+    spec:
+      containers:
+        - name: fosdem-2021
+          image: "ghcr.io/$GITHUB_REPOSITORY:$GITHUB_SHA"
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 200Mi
