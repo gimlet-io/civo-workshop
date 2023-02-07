@@ -46,6 +46,9 @@ jobs:
         
         cp -r templated-manifests/ gitops/clusters/civo-workshop/$GITHUB_REPOSITORY_NAME-app
 
+        git config --global user.email "you@example.com"
+        git config --global user.name "Your Name"
+
         (cd gitops/; git commit -m "Deploying $GITHUB_SHA")
         (cd gitops/; git push origin main)
       env:
