@@ -49,6 +49,7 @@ jobs:
         git config --global user.email "you@example.com"
         git config --global user.name "Your Name"
 
+        (cd gitops/; git add .)
         (cd gitops/; git commit -m "Deploying $GITHUB_SHA")
         (cd gitops/; git push origin main)
       env:
