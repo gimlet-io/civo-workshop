@@ -438,4 +438,6 @@ kubectl get secret grafana --template='{{ index .data "admin-password"}}' | base
 
 ## Deploy to gitops with Github Actions
 
-
+- fork & clone https://github.com/gimlet-io/civo-workshop
+- adjust https://github.com/gimlet-io/civo-workshop/blob/main/.github/workflows/gitops-deploy.yaml
+- an example run: https://github.com/gimlet-io/civo-workshop/actions/runs/4109111636
